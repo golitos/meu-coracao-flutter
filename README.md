@@ -36,5 +36,5 @@ Este projeto dá continuidade à versão legada desenvolvida em React Native/Fir
 
 1. Clone o repositório:
    ```bash
-   git clone <URL_DO_REPOSITORIO>
+   git clone <https://github.com/golitos/meu-coracao-flutter.git>
    cd meu_coracao
