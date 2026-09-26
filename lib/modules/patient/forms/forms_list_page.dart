@@ -85,10 +85,10 @@ class _PatientFormsListPageState extends State<PatientFormsListPage> {
               child: CircularProgressIndicator(color: Color(0xFFD04556)),
             )
           : _forms.isEmpty
-              ? Center(
+              ? const Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: const [
+                    children: [
                       Icon(Icons.assignment_outlined,
                           size: 64, color: Colors.black26),
                       SizedBox(height: 12),

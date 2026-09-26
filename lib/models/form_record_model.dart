@@ -43,12 +43,15 @@ class FormRecordModel {
 
   // Define a gravidade máxima calculada pelo formulário
   String get gravityLevel {
-    if (diagDorPeito == 'Grave' || diagInsuficienciaCard == 'Grave')
+    if (diagDorPeito == 'Grave' || diagInsuficienciaCard == 'Grave') {
       return 'Grave';
-    if (diagDorPeito == 'Moderado' || diagInsuficienciaCard == 'Moderado')
+    }
+    if (diagDorPeito == 'Moderado' || diagInsuficienciaCard == 'Moderado') {
       return 'Moderado';
-    if (diagDorPeito == 'Leve' || diagInsuficienciaCard == 'Leve')
+    }
+    if (diagDorPeito == 'Leve' || diagInsuficienciaCard == 'Leve') {
       return 'Leve';
+    }
     return 'Tranquilo';
   }
 }

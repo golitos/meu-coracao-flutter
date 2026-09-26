@@ -244,10 +244,10 @@ class _PatientProfilePageState extends State<PatientProfilePage> {
             ),
 
             // Rodapé de Créditos Institucionais do Projeto
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16.0),
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 16.0),
               child: Column(
-                children: const [
+                children: [
                   Text('Desenvolvido por: Gabriel Longhi Quadro',
                       style: TextStyle(color: Colors.white54, fontSize: 11)),
                   SizedBox(height: 2),

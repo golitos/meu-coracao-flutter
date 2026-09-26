@@ -1,16 +1,22 @@
 import 'package:flutter/material.dart';
 import '../../../core/supabase_client.dart';
 
-// Tela de edição completa dos dados cadastrais e clínicos do paciente
-// Tradução direta de AtualizarPerfilPacienteP.js
-class PatientEditProfilePage extends StatefulWidget {
-  const PatientEditProfilePage({super.key});
+// Ecrã onde o Médico edita os dados de um paciente específico
+// Tradução direta de AtualizarPerfilPaciente.js
+class PatientEditByDoctorPage extends StatefulWidget {
+  final Map<String, dynamic> patientData;
+
+  const PatientEditByDoctorPage({
+    super.key,
+    required this.patientData,
+  });
 
   @override
-  State<PatientEditProfilePage> createState() => _PatientEditProfilePageState();
+  State<PatientEditByDoctorPage> createState() =>
+      _PatientEditByDoctorPageState();
 }
 
-class _PatientEditProfilePageState extends State<PatientEditProfilePage> {
+class _PatientEditByDoctorPageState extends State<PatientEditByDoctorPage> {
   final _formKey = GlobalKey<FormState>();
 
   // Controladores de texto
@@ -22,7 +28,7 @@ class _PatientEditProfilePageState extends State<PatientEditProfilePage> {
   final _yearController = TextEditingController();
   final _otherSurgeryController = TextEditingController();
 
-  // Seletores e Comorbidades
+  // Seletores e Comorbilidades
   String? _selectedSex;
   String? _selectedDoctorId;
   String? _selectedSurgery;
@@ -33,7 +39,6 @@ class _PatientEditProfilePageState extends State<PatientEditProfilePage> {
   bool _isLoading = true;
   bool _isSaving = false;
 
-  // Lista de tipos de cirurgias cardíacas
   final List<Map<String, String>> _surgeryTypes = const [
     {'value': 'RM', 'label': 'Revascularização do miocárdio'},
     {'value': 'TVA', 'label': 'Troca valvar aórtica'},
@@ -62,13 +67,12 @@ class _PatientEditProfilePageState extends State<PatientEditProfilePage> {
     super.dispose();
   }
 
-  // Carrega médicos cadastrados e dados do perfil atual
+  // Carrega lista de médicos e os dados atuais do paciente
   Future<void> _loadInitialData() async {
-    final userId = supabase.auth.currentUser?.id;
-    if (userId == null) return;
+    final patientId = widget.patientData['id'];
 
     try {
-      // 1. Busca lista de médicos disponíveis
+      // 1. Busca médicos disponíveis para reatribuição
       final doctorsResponse = await supabase
           .from('profiles')
           .select('id, name')
@@ -76,11 +80,11 @@ class _PatientEditProfilePageState extends State<PatientEditProfilePage> {
 
       _doctorList = List<Map<String, dynamic>>.from(doctorsResponse);
 
-      // 2. Busca perfil atual do paciente
+      // 2. Busca perfil atualizado do paciente
       final profile = await supabase
           .from('profiles')
           .select()
-          .eq('id', userId)
+          .eq('id', patientId)
           .maybeSingle();
 
       if (profile != null) {
@@ -99,13 +103,13 @@ class _PatientEditProfilePageState extends State<PatientEditProfilePage> {
         _hipertensao = profile['hypertension'] == true ? 'Sim' : 'Nao';
       }
     } catch (e) {
-      debugPrint('Aviso ao carregar dados do perfil: $e');
+      debugPrint('Aviso ao carregar dados do paciente: $e');
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
   }
 
-  // Salva os dados atualizados no Supabase
+  // Guarda as alterações efetuadas pelo médico no perfil do paciente
   Future<void> _handleSave() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -118,7 +122,6 @@ class _PatientEditProfilePageState extends State<PatientEditProfilePage> {
     }
 
     setState(() => _isSaving = true);
-    final userId = supabase.auth.currentUser?.id;
 
     try {
       await supabase.from('profiles').update({
@@ -137,18 +140,19 @@ class _PatientEditProfilePageState extends State<PatientEditProfilePage> {
         'diabetes': _diabetes == 'Sim',
         'hypertension': _hipertensao == 'Sim',
         'updated_at': DateTime.now().toIso8601String(),
-      }).eq('id', userId!);
+      }).eq('id', widget.patientData['id']);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Perfil atualizado com sucesso!')),
+          const SnackBar(
+              content: Text('Dados do paciente atualizados com sucesso!')),
         );
         Navigator.pop(context, true);
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao atualizar perfil: $e')),
+          SnackBar(content: Text('Erro ao atualizar paciente: $e')),
         );
       }
     } finally {
@@ -161,7 +165,7 @@ class _PatientEditProfilePageState extends State<PatientEditProfilePage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Atualizar Perfil',
+        title: const Text('Editar Paciente',
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         backgroundColor: const Color(0xFF353840),
         iconTheme: const IconThemeData(color: Colors.white),
@@ -176,21 +180,17 @@ class _PatientEditProfilePageState extends State<PatientEditProfilePage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // Nome Completo
                     TextFormField(
                       controller: _nameController,
                       style: const TextStyle(color: Colors.black87),
                       decoration: const InputDecoration(
-                        labelText: 'Nome Completo',
-                        border: OutlineInputBorder(),
-                      ),
+                          labelText: 'Nome Completo do Paciente',
+                          border: OutlineInputBorder()),
                       validator: (val) => val == null || val.trim().isEmpty
                           ? 'Nome é obrigatório'
                           : null,
                     ),
                     const SizedBox(height: 16),
-
-                    // Data de Nascimento (Dia / Mês / Ano)
                     const Text('Data de Nascimento:',
                         style: TextStyle(
                             fontWeight: FontWeight.bold,
@@ -199,59 +199,49 @@ class _PatientEditProfilePageState extends State<PatientEditProfilePage> {
                     Row(
                       children: [
                         Expanded(
-                          child: TextFormField(
-                            controller: _dayController,
-                            keyboardType: TextInputType.number,
-                            maxLength: 2,
-                            style: const TextStyle(color: Colors.black87),
-                            decoration: const InputDecoration(
-                                hintText: 'Dia',
-                                border: OutlineInputBorder(),
-                                counterText: ''),
-                          ),
-                        ),
+                            child: TextFormField(
+                                controller: _dayController,
+                                keyboardType: TextInputType.number,
+                                maxLength: 2,
+                                style: const TextStyle(color: Colors.black87),
+                                decoration: const InputDecoration(
+                                    hintText: 'Dia',
+                                    border: OutlineInputBorder(),
+                                    counterText: ''))),
                         const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 8),
-                          child: Text('/',
-                              style: TextStyle(
-                                  fontSize: 22, color: Colors.black54)),
-                        ),
+                            padding: EdgeInsets.symmetric(horizontal: 8),
+                            child: Text('/',
+                                style: TextStyle(
+                                    fontSize: 22, color: Colors.black54))),
                         Expanded(
-                          child: TextFormField(
-                            controller: _monthController,
-                            keyboardType: TextInputType.number,
-                            maxLength: 2,
-                            style: const TextStyle(color: Colors.black87),
-                            decoration: const InputDecoration(
-                                hintText: 'Mês',
-                                border: OutlineInputBorder(),
-                                counterText: ''),
-                          ),
-                        ),
+                            child: TextFormField(
+                                controller: _monthController,
+                                keyboardType: TextInputType.number,
+                                maxLength: 2,
+                                style: const TextStyle(color: Colors.black87),
+                                decoration: const InputDecoration(
+                                    hintText: 'Mês',
+                                    border: OutlineInputBorder(),
+                                    counterText: ''))),
                         const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 8),
-                          child: Text('/',
-                              style: TextStyle(
-                                  fontSize: 22, color: Colors.black54)),
-                        ),
+                            padding: EdgeInsets.symmetric(horizontal: 8),
+                            child: Text('/',
+                                style: TextStyle(
+                                    fontSize: 22, color: Colors.black54))),
                         Expanded(
-                          flex: 2,
-                          child: TextFormField(
-                            controller: _yearController,
-                            keyboardType: TextInputType.number,
-                            maxLength: 4,
-                            style: const TextStyle(color: Colors.black87),
-                            decoration: const InputDecoration(
-                                hintText: 'Ano',
-                                border: OutlineInputBorder(),
-                                counterText: ''),
-                          ),
-                        ),
+                            flex: 2,
+                            child: TextFormField(
+                                controller: _yearController,
+                                keyboardType: TextInputType.number,
+                                maxLength: 4,
+                                style: const TextStyle(color: Colors.black87),
+                                decoration: const InputDecoration(
+                                    hintText: 'Ano',
+                                    border: OutlineInputBorder(),
+                                    counterText: ''))),
                       ],
                     ),
                     const SizedBox(height: 16),
-
-                    // Nome da Mãe
                     TextFormField(
                       controller: _motherNameController,
                       style: const TextStyle(color: Colors.black87),
@@ -260,8 +250,6 @@ class _PatientEditProfilePageState extends State<PatientEditProfilePage> {
                           border: OutlineInputBorder()),
                     ),
                     const SizedBox(height: 16),
-
-                    // Telefone
                     TextFormField(
                       controller: _phoneController,
                       keyboardType: TextInputType.phone,
@@ -270,10 +258,8 @@ class _PatientEditProfilePageState extends State<PatientEditProfilePage> {
                           labelText: 'Telefone', border: OutlineInputBorder()),
                     ),
                     const SizedBox(height: 16),
-
-                    // Sexo
                     DropdownButtonFormField<String>(
-                      initialValue: _selectedSex,
+                      value: _selectedSex,
                       decoration: const InputDecoration(
                           labelText: 'Sexo', border: OutlineInputBorder()),
                       items: const [
@@ -289,56 +275,47 @@ class _PatientEditProfilePageState extends State<PatientEditProfilePage> {
                       onChanged: (val) => setState(() => _selectedSex = val),
                     ),
                     const SizedBox(height: 16),
-
-                    // Selecionar Médico Responsável
                     DropdownButtonFormField<String>(
-                      initialValue: _selectedDoctorId,
+                      value: _selectedDoctorId,
                       decoration: const InputDecoration(
                           labelText: 'Médico Responsável',
                           border: OutlineInputBorder()),
-                      items: _doctorList.map((doc) {
-                        return DropdownMenuItem<String>(
-                          value: doc['id'].toString(),
-                          child: Text(doc['name'] ?? 'Sem Nome',
-                              style: const TextStyle(color: Colors.black87)),
-                        );
-                      }).toList(),
+                      items: _doctorList
+                          .map((doc) => DropdownMenuItem<String>(
+                              value: doc['id'].toString(),
+                              child: Text(doc['name'] ?? 'Sem Nome',
+                                  style:
+                                      const TextStyle(color: Colors.black87))))
+                          .toList(),
                       onChanged: (val) =>
                           setState(() => _selectedDoctorId = val),
                     ),
                     const SizedBox(height: 16),
-
-                    // Tipo de Cirurgia
                     DropdownButtonFormField<String>(
-                      initialValue: _selectedSurgery,
+                      value: _selectedSurgery,
                       decoration: const InputDecoration(
                           labelText: 'Cirurgia Realizada',
                           border: OutlineInputBorder()),
-                      items: _surgeryTypes.map((s) {
-                        return DropdownMenuItem<String>(
-                          value: s['value']!,
-                          child: Text(s['label']!,
-                              style: const TextStyle(color: Colors.black87)),
-                        );
-                      }).toList(),
+                      items: _surgeryTypes
+                          .map((s) => DropdownMenuItem<String>(
+                              value: s['value']!,
+                              child: Text(s['label']!,
+                                  style:
+                                      const TextStyle(color: Colors.black87))))
+                          .toList(),
                       onChanged: (val) =>
                           setState(() => _selectedSurgery = val),
                     ),
                     const SizedBox(height: 16),
-
-                    // Campo Condicional: Outra Cirurgia
                     if (_selectedSurgery == 'O') ...[
                       TextFormField(
-                        controller: _otherSurgeryController,
-                        style: const TextStyle(color: Colors.black87),
-                        decoration: const InputDecoration(
-                            labelText: 'Especifique o nome da cirurgia',
-                            border: OutlineInputBorder()),
-                      ),
+                          controller: _otherSurgeryController,
+                          style: const TextStyle(color: Colors.black87),
+                          decoration: const InputDecoration(
+                              labelText: 'Especifique o nome da cirurgia',
+                              border: OutlineInputBorder())),
                       const SizedBox(height: 16),
                     ],
-
-                    // Comorbidades: Diabetes
                     const Text('Possui diabetes?',
                         style: TextStyle(
                             fontWeight: FontWeight.bold,
@@ -346,27 +323,23 @@ class _PatientEditProfilePageState extends State<PatientEditProfilePage> {
                     Row(
                       children: [
                         Radio<String>(
-                          value: 'Sim',
-                          groupValue: _diabetes,
-                          activeColor: const Color(0xFFD04556),
-                          onChanged: (v) => setState(() => _diabetes = v!),
-                        ),
+                            value: 'Sim',
+                            groupValue: _diabetes,
+                            activeColor: const Color(0xFFD04556),
+                            onChanged: (v) => setState(() => _diabetes = v!)),
                         const Text('Sim',
                             style: TextStyle(color: Colors.black87)),
                         const SizedBox(width: 24),
                         Radio<String>(
-                          value: 'Nao',
-                          groupValue: _diabetes,
-                          activeColor: const Color(0xFFD04556),
-                          onChanged: (v) => setState(() => _diabetes = v!),
-                        ),
+                            value: 'Nao',
+                            groupValue: _diabetes,
+                            activeColor: const Color(0xFFD04556),
+                            onChanged: (v) => setState(() => _diabetes = v!)),
                         const Text('Não',
                             style: TextStyle(color: Colors.black87)),
                       ],
                     ),
                     const SizedBox(height: 8),
-
-                    // Comorbidades: Hipertensão
                     const Text('Possui hipertensão?',
                         style: TextStyle(
                             fontWeight: FontWeight.bold,
@@ -374,32 +347,29 @@ class _PatientEditProfilePageState extends State<PatientEditProfilePage> {
                     Row(
                       children: [
                         Radio<String>(
-                          value: 'Sim',
-                          groupValue: _hipertensao,
-                          activeColor: const Color(0xFFD04556),
-                          onChanged: (v) => setState(() => _hipertensao = v!),
-                        ),
+                            value: 'Sim',
+                            groupValue: _hipertensao,
+                            activeColor: const Color(0xFFD04556),
+                            onChanged: (v) =>
+                                setState(() => _hipertensao = v!)),
                         const Text('Sim',
                             style: TextStyle(color: Colors.black87)),
                         const SizedBox(width: 24),
                         Radio<String>(
-                          value: 'Nao',
-                          groupValue: _hipertensao,
-                          activeColor: const Color(0xFFD04556),
-                          onChanged: (v) => setState(() => _hipertensao = v!),
-                        ),
+                            value: 'Nao',
+                            groupValue: _hipertensao,
+                            activeColor: const Color(0xFFD04556),
+                            onChanged: (v) =>
+                                setState(() => _hipertensao = v!)),
                         const Text('Não',
                             style: TextStyle(color: Colors.black87)),
                       ],
                     ),
                     const SizedBox(height: 24),
-
-                    // Botão Atualizar Perfil
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFD04556),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                      ),
+                          backgroundColor: const Color(0xFFD04556),
+                          padding: const EdgeInsets.symmetric(vertical: 14)),
                       onPressed: _isSaving ? null : _handleSave,
                       child: _isSaving
                           ? const SizedBox(
@@ -407,7 +377,7 @@ class _PatientEditProfilePageState extends State<PatientEditProfilePage> {
                               width: 20,
                               child: CircularProgressIndicator(
                                   color: Colors.white, strokeWidth: 2))
-                          : const Text('Atualizar Perfil',
+                          : const Text('Gravar Alterações',
                               style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 16,

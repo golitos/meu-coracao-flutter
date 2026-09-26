@@ -321,7 +321,7 @@ class _MedicationFormPageState extends State<MedicationFormPage> {
                 // Seletor de Concentração única (para o Paciente) OU Gerenciador de Lista (para a Base)
                 if (_isEditingPatientMedication) ...[
                   DropdownButtonFormField<String>(
-                    value: _selectedConcentration,
+                    initialValue: _selectedConcentration,
                     decoration: const InputDecoration(
                       labelText: 'Concentração Prescrita',
                       border: OutlineInputBorder(),

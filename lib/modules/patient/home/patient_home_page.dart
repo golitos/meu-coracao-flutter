@@ -256,9 +256,9 @@ class _PatientHomePageState extends State<PatientHomePage> {
                                   contentPadding: EdgeInsets.zero,
                                   leading: CircleAvatar(
                                     backgroundColor: med.purchased
-                                        ? Colors.green.withOpacity(0.15)
+                                        ? Colors.green.withValues(alpha: 0.15)
                                         : const Color(0xFFD04556)
-                                            .withOpacity(0.15),
+                                            .withValues(alpha: 0.15),
                                     child: Icon(
                                       Icons.medication,
                                       color: med.purchased

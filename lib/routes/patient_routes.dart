@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import '../modules/patient/home/patient_home_page.dart';
 import '../modules/patient/forms/forms_list_page.dart';
-import '../modules/patient/forms/form_detail_page.dart';
-import '../modules/patient/forms/form_create_page.dart';
 import '../modules/patient/profile/patient_profile_page.dart';
-import '../modules/patient/profile/patient_edit_profile_page.dart';
 
 // Gerenciador de rotas do Paciente quando está logado.
 // Cria a barra inferior (BottomNavigationBar) com 3 abas: Home, Lista e Perfil.

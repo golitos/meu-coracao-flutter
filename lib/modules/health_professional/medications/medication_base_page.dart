@@ -137,10 +137,10 @@ class _MedicationBasePageState extends State<MedicationBasePage> {
                     child: CircularProgressIndicator(color: Color(0xFFD04556)),
                   )
                 : _filteredMedications.isEmpty
-                    ? Center(
+                    ? const Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
-                          children: const [
+                          children: [
                             Icon(Icons.medical_services_outlined,
                                 size: 54, color: Colors.black26),
                             SizedBox(height: 12),
@@ -177,8 +177,8 @@ class _MedicationBasePageState extends State<MedicationBasePage> {
                                   borderRadius: BorderRadius.circular(8)),
                               child: ListTile(
                                 leading: CircleAvatar(
-                                  backgroundColor:
-                                      const Color(0xFFD04556).withOpacity(0.1),
+                                  backgroundColor: const Color(0xFFD04556)
+                                      .withValues(alpha: 0.1),
                                   child: const Icon(Icons.medication,
                                       color: Color(0xFFD04556)),
                                 ),

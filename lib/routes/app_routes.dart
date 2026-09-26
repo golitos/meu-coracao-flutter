@@ -6,10 +6,6 @@ import 'auth_routes.dart';
 import 'patient_routes.dart';
 import 'doctor_routes.dart';
 
-import '../modules/patient/forms/form_create_page.dart';
-import '../modules/patient/forms/form_detail_page.dart';
-import '../modules/patient/profile/patient_edit_profile_page.dart';
-
 /// Widget guardião de rotas da aplicação (Roteador Central).
 ///
 /// Ele substitui o antigo 'src/routes/index.js' do React Native,

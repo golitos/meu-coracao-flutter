@@ -330,8 +330,9 @@ class _FormCreatePageState extends State<FormCreatePage> {
                                 groupValue: _answers[question.stateKey],
                                 onChanged: (val) {
                                   setState(() {
-                                    if (val != null)
+                                    if (val != null) {
                                       _answers[question.stateKey] = val;
+                                    }
                                   });
                                 },
                               );
