@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../core/constants/form_questions.dart';
 import '../../../core/supabase_client.dart';
 import '../../../models/form_record_model.dart';
+import '../../../models/question_model.dart';
 
 // Tela de detalhes do formulário enviado.
 // Serve tanto para o paciente ver o parecer médico quanto para o médico responder.
